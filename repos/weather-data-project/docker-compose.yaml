@@ -5,11 +5,13 @@ services:
     ports:
       - 5000:5432
     environment:
-      POSTGRES_DB: db
-      POSTGRES_USER: db_user
-      POSTGRES_PASSWORD: db_password
+      # 💡 让 Postgres 默认初始化你 Python 脚本要用的业务库和用户！
+      POSTGRES_DB: db                # 👈 对应你 Python 的 dbname="db"
+      POSTGRES_USER: db_user         # 👈 对应你 Python 的 user="db_user"
+      POSTGRES_PASSWORD: db_password # 👈 对应你 Python 的 password="db_password"
     volumes:
       - ./postgres/data:/var/lib/postgresql/data
+      # 💡 挂载你的 init.sql：它会接着创建 airflow 用户和 airflow_db 库
       - ./postgres/airflow_init.sql:/docker-entrypoint-initdb.d/airflow_init.sql
     networks:
       - my-network
@@ -18,17 +20,37 @@ services:
     container_name: airflow_container
     image: apache/airflow:3.0.0
     ports:
-      - 8000:28080
+      - 8000:8080
     environment:
+      # 💡 Airflow 连它自己的库，也就是你的 init.sql 创建出来的那个库
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@db:5432/airflow_db
     volumes:
       - ./airflow/dags:/opt/airflow/dags
+      - ./api-request:/opt/airflow/api-request
+      - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - '989'
     depends_on:
       - db
     networks:
       - my-network
     command: >
       bash -c "airflow db migrate && airflow standalone"
+
+  dbt:
+    container_name: dbt_container
+    image: ghcr.io/dbt-labs/dbt-postgres:1.9.latest
+    volumes:
+      - ./dbt/my_project:/usr/app
+      - ./dbt:/root/.dbt
+    working_dir: /usr/app
+    environment:
+      DBT_PROFILES_DIR: "/root/.dbt"
+    depends_on:
+      - db
+    networks:
+      - my-network
+    command: run
 
 networks:
   my-network:
