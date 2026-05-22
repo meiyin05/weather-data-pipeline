@@ -11,7 +11,7 @@ with source as (
 de_dup as (
     select
         *,
-        row_number() over(partition by time order by inserted_at) as rn
+        row_number() over(partition by id order by inserted_at DESC) as rn
     from source
 )
 

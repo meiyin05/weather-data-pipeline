@@ -5,19 +5,20 @@ from airflow.providers.docker.operators.docker import DockerOperator
 from datetime import datetime, timedelta
 from docker.types import Mount
 
+
 sys.path.append('/opt/airflow/api-request')
 from insert_records import main
 
 default_args= {
     'description':'A DAG to orchestrate data',
-    'start_date': datetime(2025,4,30),
+    'start_date': datetime(2026,4,30),
     'catchup':False,
 }
 
 dag = DAG(
     dag_id='weather-api-dbt-orchestrator',
     default_args=default_args,
-    schedule=timedelta(minutes=1)
+    schedule=timedelta(minutes=5)
 )
 
 with dag:
@@ -31,6 +32,7 @@ with dag:
         image='ghcr.io/dbt-labs/dbt-postgres:1.9.latest',
         command='run',
         working_dir='/usr/app',
+        mount_tmp_dir=False,
         mounts=[
             Mount(source='/workspaces/weather-data-pipeline/repos/weather-data-project/dbt/my_project',
                 target='/usr/app',

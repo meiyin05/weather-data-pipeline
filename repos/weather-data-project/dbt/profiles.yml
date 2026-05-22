@@ -3,7 +3,7 @@ my_project:
     dev:
       dbname: db
       host: db
-      pass: db_password
+      password: db_password
       port: 5432
       schema: dev
       threads: 4

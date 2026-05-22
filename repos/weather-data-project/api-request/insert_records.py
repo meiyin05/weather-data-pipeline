@@ -72,7 +72,7 @@ def insert_records(conn, data):
 
 def main():
     try:
-        # data = mock_fetch_data()
+        data = mock_fetch_data()
         conn = connect_to_db()
         create_table(conn)
         insert_records(conn, data)
@@ -82,3 +82,9 @@ def main():
         if 'conn' in locals():
             conn.close()
             print("Database connection closed.")
+
+if __name__ == "__main__":
+    main()
+
+# conn = connect_to_db()
+# create_table(conn)
